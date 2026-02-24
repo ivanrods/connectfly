@@ -98,7 +98,7 @@ const Register = () => {
               <ForumIcon fontSize="large" color="primary" />
 
               <Typography variant="h4" fontWeight="bold">
-                ConnectChat
+                ConnectFly
               </Typography>
             </Box>
             <Typography variant="body1" textAlign="center">

@@ -1,6 +1,6 @@
-# ConnectChat
+# ConnectFly
 
-ConnectChat é uma aplicação de **chat em tempo real**, desenvolvida com foco em **performance, escalabilidade e experiência do usuário**, utilizando **React no front-end**, **Node.js no back-end** e **Socket.IO** para comunicação em tempo real.
+ConnectFly é uma aplicação de **chat em tempo real**, desenvolvida com foco em **performance, escalabilidade e experiência do usuário**, utilizando **React no front-end**, **Node.js no back-end** e **Socket.IO** para comunicação em tempo real.
 
 O projeto simula funcionalidades presentes em aplicações reais como WhatsApp e Telegram, incluindo **mensagens em tempo real, contagem de mensagens não lidas, favoritos e atualização instantânea da interface**.
 
@@ -8,7 +8,7 @@ O projeto simula funcionalidades presentes em aplicações reais como WhatsApp e
 
 ## Demonstração
 
-<img src="https://i.ibb.co/ZpmD853N/connect-chat.png" width="50%" alt="Imagem da tela de chat">
+<img src="https://i.ibb.co/ZpmD853N/connect-chat.png" width="100%" alt="Imagem da tela de chat">
 
 ---
 
@@ -86,7 +86,7 @@ O projeto simula funcionalidades presentes em aplicações reais como WhatsApp e
 ## Estrutura de Pastas (resumida)
 
 ```txt
-connect-chat/
+Connectfly/
 ├── server/
 │   ├── controllers/
 │   ├── models/
