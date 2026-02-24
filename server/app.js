@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { rateLimit } from "express-rate-limit";
+import helmet from "helmet";
 import routes from "./routes/index.js";
 //import sequelize from "./config/database.js";
 
@@ -16,6 +17,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(helmet());
 
 //Limite de requisições
 const apiLimiter = rateLimit({
