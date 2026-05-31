@@ -37,16 +37,42 @@ export const getMessages = async (req, res) => {
       offset,
     });
 
-    await Message.update(
-      { isRead: true },
-      {
-        where: {
-          conversationId,
-          senderId: { [Op.ne]: userId },
-          isRead: false,
-        },
+    const unreadMessages = await Message.findAll({
+      where: {
+        conversationId,
+        senderId: { [Op.ne]: userId },
+        isRead: false,
       },
-    );
+      attributes: ['id', 'senderId'],
+    });
+
+    if (unreadMessages.length > 0) {
+      const unreadIds = unreadMessages.map(m => m.id);
+
+      await Message.update(
+        { isRead: true },
+        { where: { id: { [Op.in]: unreadIds } } },
+      );
+
+      const senderIds = [...new Set(unreadMessages.map(m => m.senderId))];
+
+      const io = getIO();
+      io.to(`conversation_${conversationId}`).emit("messagesRead", {
+        conversationId,
+        messageIds: unreadIds,
+        readBy: userId,
+      });
+
+      senderIds.forEach((senderId) => {
+        io.to(`user_${senderId}`).emit("messagesRead", {
+          conversationId,
+          messageIds: unreadMessages
+            .filter(m => m.senderId === senderId)
+            .map(m => m.id),
+          readBy: userId,
+        });
+      });
+    }
 
     res.json({
       messages: rows.reverse(),

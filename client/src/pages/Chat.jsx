@@ -5,6 +5,7 @@ import { useProfile } from "../hooks/use-profile";
 import { useConversations } from "../hooks/use-conversations";
 import { useMessages, useSendMessage } from "../hooks/use-messages";
 import { useConversationSocket } from "../hooks/use-conversation-socket";
+import { useReadReceiptSocket } from "../hooks/use-read-receipt-socket";
 import { useUnreadSocket } from "../hooks/use-unread-socket";
 import { useFavoriteSocket } from "../hooks/use-favorite-conversation-socket";
 import { useFavoriteConversation } from "../hooks/use-favorite-conversation";
@@ -136,12 +137,27 @@ export default function Chat() {
     [selectedConversation?.id, user?.id, incrementUnread],
   );
 
-  const handleNewMessage = useCallback((newMessage) => {
-    setMessages((prev) => [...prev, newMessage]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleNewMessage = useCallback(
+    (newMessage) => {
+      setMessages((prev) => [...prev, newMessage]);
+    },
+    [setMessages],
+  );
+
+  const handleMessagesRead = useCallback(
+    ({ messageIds }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          messageIds.includes(msg.id) ? { ...msg, isRead: true } : msg,
+        ),
+      );
+    },
+    [setMessages],
+  );
 
   useConversationSocket(selectedConversation?.id, handleNewMessage);
+
+  useReadReceiptSocket(selectedConversation?.id, handleMessagesRead);
 
   useUnreadSocket(handleUnread);
 
