@@ -18,7 +18,7 @@ import {
 import { useState } from "react";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import StarIcon from "@mui/icons-material/Star";
+import PushPinIcon from "@mui/icons-material/PushPin";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -88,8 +88,9 @@ export function Sidebar({
         flexDirection="column"
         justifyContent="space-between"
         height="100%"
+        sx={{ overflow: "hidden" }}
       >
-        <Box>
+        <Box display="flex" flexDirection="column" flexGrow={1} minHeight={0}>
           <Box display="flex" flexDirection="column" gap={2} padding={2}>
             <Box
               display="flex"
@@ -174,7 +175,16 @@ export function Sidebar({
             </Box>
           </Box>
 
-          <List>
+          <List
+            sx={{
+              flexGrow: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              "&::-webkit-scrollbar": { width: 0, height: 0 },
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
             {filteredConversations.length === 0 && (
               <Typography variant="subtitle1" textAlign="center">
                 Nenhuma conversa encontrada
@@ -236,7 +246,7 @@ export function Sidebar({
                       </Box>
                     </Box>
                     {conversation.favorite && (
-                      <StarIcon fontSize="small" color="primary" />
+                      <PushPinIcon fontSize="small" color="primary" />
                     )}
                   </Box>
                 </ListItemButton>

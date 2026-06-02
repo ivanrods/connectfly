@@ -10,7 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
+import PushPinIcon from "@mui/icons-material/PushPin";
 import StarIcon from "@mui/icons-material/Star";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Menu from "@mui/material/Menu";
@@ -119,7 +119,7 @@ export function ChatHeader({
               onToggleFavorite(conversation.id);
             }}
           >
-            {isFavorite ? <StarIcon color="primary" /> : <StarBorderIcon />}
+            {isFavorite ? <PushPinIcon color="primary" /> : <PushPinIcon />}
             <Typography variant="body2" marginX={1}>
               Favoritar
             </Typography>
