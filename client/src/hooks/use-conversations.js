@@ -46,7 +46,7 @@ export function useConversations() {
   }, [fetchConversations]);
 
   // CREATE conversation
-  const createConversation = async (email) => {
+  const createConversation = useCallback(async (email) => {
     try {
       setError(null);
 
@@ -78,9 +78,9 @@ export function useConversations() {
       setError(err.message);
       throw err;
     }
-  };
+  }, []);
 
-  const updateConversation = (newMessage) => {
+  const updateConversation = useCallback((newMessage) => {
     setConversations((prev) => {
       const updated = prev.map((conv) =>
         conv.id === newMessage.conversationId
@@ -97,9 +97,9 @@ export function useConversations() {
         (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
       );
     });
-  };
+  }, []);
 
-  const deleteConversation = async (conversationId) => {
+  const deleteConversation = useCallback(async (conversationId) => {
     try {
       setError(null);
 
@@ -123,9 +123,9 @@ export function useConversations() {
       setError(err.message);
       throw err;
     }
-  };
+  }, []);
 
-  const updateFavorite = ({ conversationId, favorite }) => {
+  const updateFavorite = useCallback(({ conversationId, favorite }) => {
     setConversations((prev) =>
       prev.map((conv) =>
         conv.id === conversationId
@@ -136,7 +136,7 @@ export function useConversations() {
           : conv,
       ),
     );
-  };
+  }, []);
 
   const incrementUnread = useCallback((conversationId) => {
     setConversations((prev) => {

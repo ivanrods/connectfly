@@ -16,9 +16,9 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useState } from "react";
+import { memo, useState } from "react";
 
-export function ChatHeader({
+export const ChatHeader = memo(function ChatHeader({
   conversation,
   userId,
   onMenuClick,
@@ -70,8 +70,8 @@ export function ChatHeader({
         )}
 
         <Avatar
-          src={otherUser.avatar}
-          onClick={() => onOpenImage(otherUser.avatar)}
+          src={otherUser?.avatar}
+          onClick={() => otherUser?.avatar && onOpenImage(otherUser.avatar)}
         />
         <Typography
           variant="subtitle1"
@@ -180,4 +180,4 @@ export function ChatHeader({
       </Backdrop>
     </Box>
   );
-}
+});

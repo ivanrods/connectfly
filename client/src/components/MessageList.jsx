@@ -7,11 +7,11 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { formatTime, formatDay } from "../utils/format-date";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 
-export function MessageList({
+export const MessageList = memo(function MessageList({
   messages,
   loading,
   userId,
@@ -176,4 +176,4 @@ export function MessageList({
       ))}
     </Box>
   );
-}
+});

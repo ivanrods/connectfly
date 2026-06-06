@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -9,8 +9,9 @@ export function useMessages(conversationId) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const loadingRef = useRef(false);
 
-  const fetchMessages = async (pageNumber = 1) => {
+  const fetchMessages = useCallback(async (pageNumber = 1) => {
     if (!conversationId) return;
 
     try {
@@ -33,7 +34,11 @@ export function useMessages(conversationId) {
       if (pageNumber === 1) {
         setMessages(data.messages);
       } else {
-        setMessages((prev) => [...data.messages, ...prev]);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id));
+          const uniqueNew = data.messages.filter((m) => !existingIds.has(m.id));
+          return [...uniqueNew, ...prev];
+        });
       }
 
       setHasMore(pageNumber < data.totalPages);
@@ -42,8 +47,9 @@ export function useMessages(conversationId) {
       setError(err.message);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  };
+  }, [conversationId]);
 
   // carregar quando muda conversa
   useEffect(() => {
@@ -52,16 +58,17 @@ export function useMessages(conversationId) {
     setMessages([]);
     setPage(1);
     setHasMore(true);
+    loadingRef.current = false;
 
     fetchMessages(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  }, [conversationId, fetchMessages]);
 
   // carregar mais mensagens antigas
-  const loadMore = () => {
-    if (!hasMore || loading) return;
+  const loadMore = useCallback(() => {
+    if (!hasMore || loading || loadingRef.current) return;
+    loadingRef.current = true;
     fetchMessages(page + 1);
-  };
+  }, [hasMore, loading, fetchMessages, page]);
 
   return {
     messages,
@@ -77,7 +84,7 @@ export function useSendMessage(conversationId) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const sendMessage = async ({ content = "", image = null }) => {
+  const sendMessage = useCallback(async ({ content = "", image = null }) => {
     if (!content.trim() && !image) return;
 
     const formData = new FormData();
@@ -111,7 +118,7 @@ export function useSendMessage(conversationId) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId]);
 
   return { sendMessage, loading, error };
 }

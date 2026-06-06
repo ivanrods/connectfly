@@ -15,7 +15,7 @@ import {
   InputAdornment,
   Badge,
 } from "@mui/material";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import PushPinIcon from "@mui/icons-material/PushPin";
@@ -25,7 +25,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 
 import { useAuth } from "../context/auth-context";
 
-export function Sidebar({
+export const Sidebar = memo(function Sidebar({
   open,
   onClose,
   conversations,
@@ -280,4 +280,4 @@ export function Sidebar({
       </Box>
     </Drawer>
   );
-}
+});

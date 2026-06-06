@@ -83,23 +83,29 @@ export default function Chat() {
 
   useConversationsSocket(handleConversationUpdate);
 
-  const handleSendMessage = async (content) => {
-    await sendMessage(content);
-  };
+  const handleSendMessage = useCallback(
+    async (content) => {
+      await sendMessage(content);
+    },
+    [sendMessage],
+  );
 
-  const handleDeleteConversation = async (conversationId) => {
-    try {
-      const res = await deleteConversation(conversationId);
+  const handleDeleteConversation = useCallback(
+    async (conversationId) => {
+      try {
+        const res = await deleteConversation(conversationId);
 
-      if (selectedConversation?.id === conversationId) {
-        setSelectedConversation(null);
+        setSelectedConversation((prev) =>
+          prev?.id === conversationId ? null : prev,
+        );
+
+        showAlert(res.message, "success");
+      } catch (err) {
+        showAlert(err.message, "error");
       }
-
-      showAlert(res.message, "success");
-    } catch (err) {
-      showAlert(err.message, "error");
-    }
-  };
+    },
+    [deleteConversation, showAlert],
+  );
 
   //Atualizar favoritos
   const handleFavoriteUpdate = useCallback(
@@ -120,9 +126,12 @@ export default function Chat() {
 
   useFavoriteSocket(handleFavoriteUpdate);
 
-  const handleToggleFavorite = async (conversationId) => {
-    await toggleFavorite(conversationId);
-  };
+  const handleToggleFavorite = useCallback(
+    async (conversationId) => {
+      await toggleFavorite(conversationId);
+    },
+    [toggleFavorite],
+  );
 
   //Mostra menssagens não lidas
   const handleUnread = useCallback(
@@ -139,7 +148,9 @@ export default function Chat() {
 
   const handleNewMessage = useCallback(
     (newMessage) => {
-      setMessages((prev) => [...prev, newMessage]);
+      setMessages((prev) =>
+        prev.some((m) => m.id === newMessage.id) ? prev : [...prev, newMessage],
+      );
     },
     [setMessages],
   );
@@ -194,14 +205,19 @@ export default function Chat() {
     showAlert,
   ]);
 
-  //Ver imagem
-  const handleOpenImage = (url) => {
-    setSelectedImage(url);
-  };
+  const handleOpenSidebar = useCallback(() => setSidebarOpen(true), []);
+  const handleCloseSidebar = useCallback(() => setSidebarOpen(false), []);
+  const handleOpenModal = useCallback(() => setModalOpen(true), []);
+  const handleOpenProfile = useCallback(() => setOpenPofile(true), []);
+  const handleCloseProfile = useCallback(() => setOpenPofile(false), []);
 
-  const handleCloseImage = () => {
+  const handleOpenImage = useCallback((url) => {
+    setSelectedImage(url);
+  }, []);
+
+  const handleCloseImage = useCallback(() => {
     setSelectedImage(null);
-  };
+  }, []);
 
   if (loadingProfile) {
     return <LoadingPage />;
@@ -212,24 +228,24 @@ export default function Chat() {
       <Box>
         <Sidebar
           open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
+          onClose={handleCloseSidebar}
           conversations={conversations}
           loading={loadingConversations}
           selectedConversation={selectedConversation}
           setSelectedConversation={setSelectedConversation}
           user={user}
           userId={user.id}
-          onAddConversation={() => setModalOpen(true)}
-          handleProfile={() => setOpenPofile(true)}
+          onAddConversation={handleOpenModal}
+          handleProfile={handleOpenProfile}
         />
         <CreateConversation
           open={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={handleCloseSidebar}
           onCreate={createConversation}
         />
         <EditProfile
           open={openPofile}
-          onClose={() => setOpenPofile(false)}
+          onClose={handleCloseProfile}
           user={user}
           updateProfile={updateUser}
           updateAvatar={uploadAvatar}
@@ -249,7 +265,7 @@ export default function Chat() {
             alignItems="center"
             justifyContent="center"
           >
-            <Button variant="text" onClick={() => setSidebarOpen(true)}>
+            <Button variant="text" onClick={handleOpenSidebar}>
               Selecione uma conversa
             </Button>
           </Box>
@@ -258,7 +274,7 @@ export default function Chat() {
             <ChatHeader
               conversation={selectedConversation}
               userId={user.id}
-              onMenuClick={() => setSidebarOpen(true)}
+              onMenuClick={handleOpenSidebar}
               onDelete={handleDeleteConversation}
               onToggleFavorite={handleToggleFavorite}
               onOpenImage={handleOpenImage}

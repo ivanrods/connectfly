@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   TextField,
@@ -11,11 +11,19 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useAlert } from "../context/alert-context";
 
-export function MessageInput({ onSend, disabled, loading }) {
+export const MessageInput = memo(function MessageInput({ onSend, disabled, loading }) {
   const { showAlert } = useAlert();
   const [message, setMessage] = useState("");
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
+
+  const imageUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+
+  useEffect(() => {
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+  }, [imageUrl]);
 
   const handleAttachClick = () => {
     fileInputRef.current.click();
@@ -56,7 +64,7 @@ export function MessageInput({ onSend, disabled, loading }) {
         <Box position="relative">
           <Box
             component="img"
-            src={URL.createObjectURL(file)}
+            src={imageUrl}
             maxHeight={40}
             maxWidth={40}
             borderRadius={1}
@@ -123,4 +131,4 @@ export function MessageInput({ onSend, disabled, loading }) {
       />
     </Box>
   );
-}
+});

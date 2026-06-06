@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export function useFavoriteConversation() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -6,7 +6,7 @@ export function useFavoriteConversation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const toggleFavorite = async (conversationId) => {
+  const toggleFavorite = useCallback(async (conversationId) => {
     if (!conversationId) return;
     try {
       setLoading(true);
@@ -30,6 +30,6 @@ export function useFavoriteConversation() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   return { toggleFavorite, error, loading };
 }

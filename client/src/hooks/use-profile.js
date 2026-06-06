@@ -70,7 +70,7 @@ export function useProfile() {
   }, [apiUrl]);
 
   // update
-  const updateUser = async (payload) => {
+  const updateUser = useCallback(async (payload) => {
     try {
       setLoading(true);
       setError(null);
@@ -96,10 +96,10 @@ export function useProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   //  delete
-  const deleteUser = async () => {
+  const deleteUser = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -120,10 +120,10 @@ export function useProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // upload avatar
-  const uploadAvatar = async (file) => {
+  const uploadAvatar = useCallback(async (file) => {
     try {
       setLoading(true);
       setError(null);
@@ -143,10 +143,11 @@ export function useProfile() {
         body: formData,
       });
 
-      const updatedUser = { ...user, avatar: data.avatar };
-
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser((prev) => {
+        const updatedUser = { ...prev, avatar: data.avatar };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
 
       return data;
     } catch (err) {
@@ -155,7 +156,7 @@ export function useProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUser();
