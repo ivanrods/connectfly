@@ -45,25 +45,34 @@ export const Sidebar = memo(function Sidebar({
   const [filter, setFilter] = useState("recent");
 
   //filtro de conversas
-  const filteredConversations = conversations.filter((conversation) => {
-    const otherUser = conversation.users.find((u) => u.id !== userId);
-    const isFavorite = conversation.favorite ?? false;
-    const userSearch =
-      otherUser?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      otherUser?.email?.toLowerCase().includes(search.toLowerCase());
+  const filteredConversations = conversations
+    .filter((conversation) => {
+      const otherUser = conversation.users.find((u) => u.id !== userId);
+      const isFavorite = conversation.favorite ?? false;
+      const userSearch =
+        otherUser?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        otherUser?.email?.toLowerCase().includes(search.toLowerCase());
 
-    if (!otherUser) return false;
+      if (!otherUser) return false;
 
-    if (filter === "favorites") {
-      return isFavorite && userSearch;
-    }
+      if (filter === "favorites") {
+        return isFavorite && userSearch;
+      }
 
-    if (filter === "unread") {
-      return conversation.unreadCount > 0 && userSearch;
-    }
+      if (filter === "unread") {
+        return conversation.unreadCount > 0 && userSearch;
+      }
 
-    return userSearch;
-  });
+      return userSearch;
+    })
+    .sort((a, b) => {
+      // Coloca conversas favoritas no topo
+      const aIsFavorite = a.favorite ?? false;
+      const bIsFavorite = b.favorite ?? false;
+
+      if (aIsFavorite === bIsFavorite) return 0;
+      return aIsFavorite ? -1 : 1;
+    });
 
   if (loading) {
     return <LinearProgress />;
