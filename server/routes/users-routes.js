@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   deleteUser,
   getUser,
+  listUsers,
   updateUser,
   updateUserAvatar,
 } from "../controllers/user-controller.js";
@@ -10,6 +11,7 @@ import upload from "../config/upload.js";
 
 const router = Router();
 
+router.get("/", authenticateToken, listUsers);
 router.get("/:id", authenticateToken, getUser);
 router.put("/:id", authenticateToken, updateUser);
 router.delete("/:id", authenticateToken, deleteUser);

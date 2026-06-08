@@ -1,6 +1,49 @@
+import { Op } from "sequelize";
 import User from "../models/user.js";
+import { ConversationUser } from "../models/index.js";
 import { userSchema } from "../schemas/auth-schema.js";
 import cloudinary from "../config/cloudinary.js";
+
+export const listUsers = async (req, res) => {
+  try {
+    const myConversations = await ConversationUser.findAll({
+      where: { userId: req.user.id },
+      attributes: ["conversationId"],
+    });
+
+    const conversationIds = myConversations.map((c) => c.conversationId);
+
+    const connectedUsers = await ConversationUser.findAll({
+      where: {
+        conversationId: { [Op.in]: conversationIds },
+        userId: { [Op.ne]: req.user.id },
+      },
+      attributes: ["userId"],
+    });
+
+    const connectedUserIds = connectedUsers.map((c) => c.userId);
+
+    const users = await User.findAll({
+      where: {
+        id: {
+          [Op.ne]: req.user.id,
+          ...(connectedUserIds.length > 0 && {
+            [Op.notIn]: connectedUserIds,
+          }),
+        },
+      },
+      attributes: ["id", "name", "email", "avatar"],
+    });
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("Erro ao listar usuários:", error);
+
+    return res.status(500).json({
+      message: "Erro interno ao listar usuários",
+    });
+  }
+};
 
 export const getUser = async (req, res) => {
   const { id } = req.params;

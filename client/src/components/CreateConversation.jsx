@@ -2,29 +2,26 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
   Button,
+  CircularProgress,
   Box,
-  InputAdornment,
 } from "@mui/material";
-import { useState } from "react";
-import MailIcon from "@mui/icons-material/Mail";
+import { useUsers } from "../hooks/use-users";
 
 export function CreateConversation({ open, onClose, onCreate }) {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { users, loading } = useUsers(open);
 
-  const handleCreate = async () => {
-    if (!email) return;
+  const handleConnect = async (user) => {
     try {
-      setLoading(true);
-      await onCreate(email);
+      await onCreate(user.email);
       onClose();
     } catch (error) {
       console.error(error);
-    } finally {
-      setEmail("");
-      setLoading(false);
     }
   };
 
@@ -33,35 +30,37 @@ export function CreateConversation({ open, onClose, onCreate }) {
       <DialogTitle>Nova conexão</DialogTitle>
 
       <DialogContent>
-        <Box component="form" display="flex" gap={2} mt={1}>
-          <TextField
-            size="small"
-            type="email"
-            placeholder="Email do usuário"
-            fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MailIcon />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-
-          <Button
-            type="submit"
-            size="large"
-            variant="contained"
-            onClick={handleCreate}
-            disabled={loading}
-          >
-            Conectar
-          </Button>
-        </Box>
+        {loading ? (
+          <Box display="flex" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <List sx={{ pt: 0 }}>
+            {users.map((user) => (
+              <ListItem
+                key={user.id}
+                secondaryAction={
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleConnect(user)}
+                  >
+                    Conectar
+                  </Button>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar src={user.avatar} />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={user.name}
+                  secondary={user.email}
+                  secondaryTypographyProps={{ sx: { color: "#999" } }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
       </DialogContent>
     </Dialog>
   );

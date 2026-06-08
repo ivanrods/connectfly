@@ -240,7 +240,7 @@ export default function Chat() {
         />
         <CreateConversation
           open={modalOpen}
-          onClose={handleCloseSidebar}
+          onClose={() => setModalOpen(false)}
           onCreate={createConversation}
         />
         <EditProfile
