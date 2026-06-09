@@ -6,6 +6,11 @@ import cloudinary from "../config/cloudinary.js";
 
 export const listUsers = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || "";
+
     const myConversations = await ConversationUser.findAll({
       where: { userId: req.user.id },
       attributes: ["conversationId"],
@@ -23,19 +28,35 @@ export const listUsers = async (req, res) => {
 
     const connectedUserIds = connectedUsers.map((c) => c.userId);
 
-    const users = await User.findAll({
-      where: {
-        id: {
-          [Op.ne]: req.user.id,
-          ...(connectedUserIds.length > 0 && {
-            [Op.notIn]: connectedUserIds,
-          }),
-        },
+    const where = {
+      id: {
+        [Op.ne]: req.user.id,
+        ...(connectedUserIds.length > 0 && {
+          [Op.notIn]: connectedUserIds,
+        }),
       },
+    };
+
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    const { count, rows } = await User.findAndCountAll({
+      where,
       attributes: ["id", "name", "email", "avatar"],
+      limit,
+      offset,
+      order: [["name", "ASC"]],
     });
 
-    return res.status(200).json(users);
+    return res.status(200).json({
+      users: rows,
+      hasMore: offset + limit < count,
+      total: count,
+    });
   } catch (error) {
     console.error("Erro ao listar usuários:", error);
 

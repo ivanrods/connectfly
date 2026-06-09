@@ -14,18 +14,13 @@ import {
   InputAdornment,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useUsers } from "../hooks/use-users";
 
 export function CreateConversation({ open, onClose, onCreate }) {
-  const { users, loading } = useUsers(open);
   const [search, setSearch] = useState("");
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user.email?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const { users, loading, hasMore, loadMore } = useUsers(open, search);
+  const listRef = useRef(null);
 
   const handleConnect = async (user) => {
     try {
@@ -36,40 +31,57 @@ export function CreateConversation({ open, onClose, onCreate }) {
     }
   };
 
+  const handleScroll = useCallback(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    const threshold = 50;
+    if (
+      el.scrollHeight - el.scrollTop - el.clientHeight < threshold &&
+      hasMore &&
+      !loading
+    ) {
+      loadMore();
+    }
+  }, [hasMore, loading, loadMore]);
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>Nova conexão</DialogTitle>
 
-      <DialogContent>
-        {loading ? (
-          <Box display="flex" justifyContent="center">
+      <DialogContent
+        ref={listRef}
+        onScroll={handleScroll}
+        sx={{ overflow: "auto" }}
+      >
+        <Box mb={2} mt={1}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Busque por nome ou email"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ mb: 1 }}
+          />
+        </Box>
+
+        {loading && users.length === 0 ? (
+          <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <Box component="form" mt={1}>
-              {" "}
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Busque por nome ou email"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{ mb: 1 }}
-              />
-            </Box>
-
             <List sx={{ pt: 0 }}>
-              {filteredUsers.map((user) => (
+              {users.map((user) => (
                 <ListItem
                   key={user.id}
                   secondaryAction={
@@ -93,6 +105,12 @@ export function CreateConversation({ open, onClose, onCreate }) {
                 </ListItem>
               ))}
             </List>
+
+            {loading && users.length > 0 && (
+              <Box display="flex" justifyContent="center" py={2}>
+                <CircularProgress size={24} />
+              </Box>
+            )}
           </>
         )}
       </DialogContent>
