@@ -10,6 +10,7 @@ import { useUnreadSocket } from "../hooks/use-unread-socket";
 import { useFavoriteSocket } from "../hooks/use-favorite-conversation-socket";
 import { useFavoriteConversation } from "../hooks/use-favorite-conversation";
 import { useConversationsSocket } from "../hooks/use-conversations-socket";
+import { useSocket } from "../context/socket-context";
 
 import { CreateConversation } from "../components/CreateConversation";
 import { Sidebar } from "../components/Sidebar";
@@ -29,6 +30,8 @@ export default function Chat() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const { showAlert } = useAlert();
+
+  const socket = useSocket();
 
   const {
     user,
@@ -151,8 +154,15 @@ export default function Chat() {
       setMessages((prev) =>
         prev.some((m) => m.id === newMessage.id) ? prev : [...prev, newMessage],
       );
+
+      if (newMessage.sender.id !== user.id) {
+        socket?.emit("markConversationRead", {
+          conversationId: newMessage.conversationId,
+          userId: user.id,
+        });
+      }
     },
-    [setMessages],
+    [setMessages, user?.id, socket],
   );
 
   const handleMessagesRead = useCallback(
