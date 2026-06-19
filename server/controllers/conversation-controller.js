@@ -5,6 +5,7 @@ import {
   Message,
 } from "../models/index.js";
 import { Op } from "sequelize";
+import { getOnlineUsers } from "../config/socket.js";
 
 export const getConversations = async (req, res) => {
   const userId = req.user.id;
@@ -50,12 +51,18 @@ export const getConversations = async (req, res) => {
       order: [["updatedAt", "DESC"]],
     });
 
+    const onlineUsers = getOnlineUsers();
+
     const formatted = conversations.map((conv) => {
       const json = conv.toJSON();
 
       return {
         ...json,
         unreadCount: json.unreadMessages?.length || 0,
+        users: json.users.map((u) => ({
+          ...u,
+          isOnline: onlineUsers.has(u.id),
+        })),
       };
     });
 

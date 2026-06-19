@@ -1,9 +1,30 @@
 import { Server } from "socket.io";
 import "dotenv/config";
+import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
-import { Message, Conversation, User } from "../models/index.js";
+import { Message, Conversation, User, ConversationUser } from "../models/index.js";
 
 let io;
+
+const onlineUsers = new Map();
+
+export function getOnlineUsers() {
+  return onlineUsers;
+}
+
+async function emitUserStatus(userId, isOnline) {
+  const participations = await ConversationUser.findAll({
+    where: { userId },
+    attributes: ["conversationId"],
+  });
+
+  participations.forEach((p) => {
+    io.to(`conversation_${p.conversationId}`).emit("userStatus", {
+      userId,
+      isOnline,
+    });
+  });
+}
 
 export function setupSocket(server) {
   io = new Server(server, {
@@ -14,7 +35,37 @@ export function setupSocket(server) {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
+    let userId;
+
+    try {
+      const token = socket.handshake.auth?.token;
+      if (!token) {
+        socket.disconnect();
+        return;
+      }
+      const decoded = jwt.verify(token, process.env.SECRET);
+      userId = decoded.id;
+    } catch {
+      socket.disconnect();
+      return;
+    }
+
+    socket.userId = userId;
+
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+    }
+    onlineUsers.get(userId).add(socket.id);
+
+    socket.join(`user_${userId}`);
+
+    try {
+      await emitUserStatus(userId, true);
+    } catch (err) {
+      console.error("Erro ao emitir status online:", err);
+    }
+
     socket.on("joinUser", (userId) => {
       socket.join(`user_${userId}`);
     });
@@ -78,7 +129,20 @@ export function setupSocket(server) {
       }
     });
 
-    socket.on("disconnect", () => {});
+    socket.on("disconnect", async () => {
+      const userSockets = onlineUsers.get(socket.userId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          onlineUsers.delete(socket.userId);
+          try {
+            await emitUserStatus(socket.userId, false);
+          } catch (err) {
+            console.error("Erro ao emitir status offline:", err);
+          }
+        }
+      }
+    });
   });
 }
 

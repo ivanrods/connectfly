@@ -16,7 +16,9 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { memo, useState } from "react";
+import { useOnlineStatus } from "../hooks/use-online-status";
 
 export const ChatHeader = memo(function ChatHeader({
   conversation,
@@ -29,6 +31,7 @@ export const ChatHeader = memo(function ChatHeader({
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const { isOnline } = useOnlineStatus();
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDeleteConversation, setOpenDeleteConversation] = useState(false);
 
@@ -73,15 +76,22 @@ export const ChatHeader = memo(function ChatHeader({
           src={otherUser?.avatar}
           onClick={() => otherUser?.avatar && onOpenImage(otherUser.avatar)}
         />
-        <Typography
-          variant="subtitle1"
-          noWrap
-          textOverflow="ellipsis"
-          whiteSpace="nowrap"
-          maxWidth={isMobile ? 200 : "100%"}
-        >
-          {otherUser?.name || "Usuário"}
-        </Typography>
+        <Box>
+          <Typography
+            variant="subtitle1"
+            noWrap
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            maxWidth={isMobile ? 200 : "100%"}
+          >
+            {otherUser?.name || "Usuário"}
+          </Typography>
+          <Box display="flex" alignItems="center" gap={0.5} p={0} m={0}>
+            <Typography variant="caption">
+              {isOnline(otherUser?.id) ? "online" : "offline"}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
 
       <Box>
