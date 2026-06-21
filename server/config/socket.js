@@ -12,17 +12,32 @@ export function getOnlineUsers() {
   return onlineUsers;
 }
 
-async function emitUserStatus(userId, isOnline) {
+async function getPartnerIds(userId) {
   const participations = await ConversationUser.findAll({
     where: { userId },
     attributes: ["conversationId"],
   });
 
-  participations.forEach((p) => {
-    io.to(`conversation_${p.conversationId}`).emit("userStatus", {
-      userId,
-      isOnline,
-    });
+  if (participations.length === 0) return [];
+
+  const conversationIds = participations.map((p) => p.conversationId);
+
+  const partners = await ConversationUser.findAll({
+    where: {
+      conversationId: { [Op.in]: conversationIds },
+      userId: { [Op.ne]: userId },
+    },
+    attributes: ["userId"],
+  });
+
+  return [...new Set(partners.map((p) => p.userId))];
+}
+
+async function emitUserStatus(userId, isOnline) {
+  const partnerIds = await getPartnerIds(userId);
+
+  partnerIds.forEach((partnerId) => {
+    io.to(`user_${partnerId}`).emit("userStatus", { userId, isOnline });
   });
 }
 
@@ -61,7 +76,20 @@ export function setupSocket(server) {
     socket.join(`user_${userId}`);
 
     try {
-      await emitUserStatus(userId, true);
+      const partnerIds = await getPartnerIds(userId);
+
+      partnerIds.forEach((partnerId) => {
+        io.to(`user_${partnerId}`).emit("userStatus", { userId, isOnline: true });
+      });
+
+      partnerIds.forEach((partnerId) => {
+        if (onlineUsers.has(partnerId)) {
+          io.to(`user_${userId}`).emit("userStatus", {
+            userId: partnerId,
+            isOnline: true,
+          });
+        }
+      });
     } catch (err) {
       console.error("Erro ao emitir status online:", err);
     }
