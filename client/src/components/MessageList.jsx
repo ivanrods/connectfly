@@ -1,15 +1,13 @@
 import {
   Box,
   Typography,
-  Paper,
-  Avatar,
   LinearProgress,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { memo, useEffect, useMemo, useRef } from "react";
-import { formatTime, formatDay } from "../utils/format-date";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
+import { formatDay } from "../utils/format-date";
+import { MessageItem } from "./MessageItem";
 
 export const MessageList = memo(function MessageList({
   messages,
@@ -95,83 +93,15 @@ export const MessageList = memo(function MessageList({
             {date}
           </Typography>
 
-          {msgs.map((msg) => {
-            const isMe = msg.sender.id === userId;
-
-            return (
-              <Box
-                key={msg.id}
-                alignSelf={isMe ? "flex-end" : "flex-start"}
-                display="flex"
-                flexDirection="column"
-                my={1}
-              >
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  flexDirection={isMe ? "row-reverse" : "row"}
-                  gap={1}
-                >
-                  <Avatar
-                    src={msg.sender.avatar}
-                    sx={{
-                      width: 30,
-                      height: 30,
-                    }}
-                  />
-
-                  {msg && (
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        bgcolor: isMe ? "primary.main" : "border.main",
-                        color: isMe ? "text.secondary" : "text.primary",
-                        p: msg.imageUrl ? 0.3 : 1,
-                        maxWidth: isMobile ? "75%" : msg.imageUrl ? 300 : 500,
-                        wordBreak: "break-word",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      {msg.imageUrl && (
-                        <Box
-                          component="img"
-                          src={msg.imageUrl}
-                          alt="imagem enviada"
-                          width="100%"
-                          height="100%"
-                          borderRadius={1}
-                          display="block"
-                          onClick={() => onOpenImage(msg.imageUrl)}
-                        />
-                      )}
-                      {msg.content && (
-                        <Typography variant="body1">{msg.content}</Typography>
-                      )}
-                    </Paper>
-                  )}
-                </Box>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  alignSelf={isMe ? "flex-end" : "flex-start"}
-                >
-                  <Typography variant="caption" color="text.primary">
-                    {formatTime(msg.createdAt)}
-                  </Typography>
-                  {isMe && (
-                    <Box>
-                      {msg.isRead ? (
-                        <DoneAllIcon fontSize="small" color="primary" />
-                      ) : (
-                        <DoneAllIcon fontSize="small" color="secondary" />
-                      )}
-                    </Box>
-                  )}
-                </Box>
-              </Box>
-            );
-          })}
+          {msgs.map((msg) => (
+            <MessageItem
+              key={msg.id}
+              msg={msg}
+              isMe={msg.sender.id === userId}
+              onOpenImage={onOpenImage}
+              isMobile={isMobile}
+            />
+          ))}
         </Box>
       ))}
     </Box>
