@@ -94,8 +94,23 @@ export function setupSocket(server) {
       console.error("Erro ao emitir status online:", err);
     }
 
-    socket.on("joinUser", (userId) => {
+    socket.on("joinUser", async (userId) => {
       socket.join(`user_${userId}`);
+
+      try {
+        const partnerIds = await getPartnerIds(userId);
+
+        partnerIds.forEach((partnerId) => {
+          if (onlineUsers.has(partnerId)) {
+            io.to(`user_${userId}`).emit("userStatus", {
+              userId: partnerId,
+              isOnline: true,
+            });
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao emitir status no joinUser:", err);
+      }
     });
 
     socket.on("joinConversation", (conversationId) => {

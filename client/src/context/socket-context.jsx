@@ -25,10 +25,13 @@ export function SocketProvider({ children }) {
     };
   }, []);
 
-  // Entra na sala do usuário
+  // Entra na sala do usuário (inclusive após reconexão)
   useEffect(() => {
     if (!socket || !user?.id) return;
-    socket.emit("joinUser", user.id);
+    const onConnect = () => socket.emit("joinUser", user.id);
+    socket.on("connect", onConnect);
+    if (socket.connected) onConnect();
+    return () => socket.off("connect", onConnect);
   }, [socket, user?.id]);
 
   return (

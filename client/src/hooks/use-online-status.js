@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "../context/socket-context";
 
-export function useOnlineStatus() {
+export function useOnlineStatus(currentUserId) {
   const socket = useSocket();
   const [onlineUsers, setOnlineUsers] = useState({});
 
@@ -13,8 +13,13 @@ export function useOnlineStatus() {
     };
 
     socket.on("userStatus", handleUserStatus);
+
+    if (currentUserId) {
+      socket.emit("joinUser", currentUserId);
+    }
+
     return () => socket.off("userStatus", handleUserStatus);
-  }, [socket]);
+  }, [socket, currentUserId]);
 
   const isOnline = (userId) => !!onlineUsers[userId];
 

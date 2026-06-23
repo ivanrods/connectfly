@@ -31,7 +31,7 @@ export const ChatHeader = memo(function ChatHeader({
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { isOnline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus(userId);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openDeleteConversation, setOpenDeleteConversation] = useState(false);
 

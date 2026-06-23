@@ -88,9 +88,16 @@ export default function Chat() {
 
   const handleSendMessage = useCallback(
     async (content) => {
-      await sendMessage(content);
+      const newMessage = await sendMessage(content);
+      if (newMessage) {
+        setMessages((prev) =>
+          prev.some((m) => m.id === newMessage.id)
+            ? prev
+            : [...prev, newMessage],
+        );
+      }
     },
-    [sendMessage],
+    [sendMessage, setMessages],
   );
 
   const handleDeleteConversation = useCallback(
